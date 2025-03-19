@@ -8,23 +8,15 @@ import inspect
 import datetime
 from functools import wraps
 
-def setup_logging():
-    """
-    راه‌اندازی و تنظیم سیستم لاگینگ
-    """
-    # تنظیم لاگر با فرمت کامل و سطح DEBUG
-    logging.basicConfig(
-        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-        level=logging.DEBUG
-    )
+# تنظیم لاگر با فرمت کامل و سطح DEBUG
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.DEBUG
+)
 
-    # لاگر اصلی برنامه
-    logger = logging.getLogger("telegram_bot_debug")
-    logger.setLevel(logging.DEBUG)
-    return logger
-
-# اجرای تنظیمات لاگینگ
-logger = setup_logging()
+# لاگر اصلی برنامه
+logger = logging.getLogger("telegram_bot_debug")
+logger.setLevel(logging.DEBUG)
 
 # مسیر فایل لاگ
 LOG_FILE = os.path.join(os.path.dirname(__file__), "debug_logs.txt")

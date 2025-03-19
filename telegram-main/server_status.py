@@ -34,25 +34,6 @@ def predict_resource_usage(current_usage, history_length=5):
     except:
         return "نامشخص", "پیش‌بینی امکان‌پذیر نیست"
 
-def get_cached_server_status():
-    """دریافت وضعیت سرور از کش"""
-    try:
-        if os.path.exists("server_status.json"):
-            with open("server_status.json", "r", encoding="utf-8") as f:
-                data = json.load(f)
-                
-                # بررسی تازگی داده‌ها (حداکثر 5 دقیقه)
-                timestamp = datetime.datetime.fromisoformat(data.get("timestamp", "2000-01-01T00:00:00"))
-                if datetime.datetime.now() - timestamp > datetime.timedelta(minutes=5):
-                    debug_log("بازتولید وضعیت سرور به دلیل منقضی شدن کش", "INFO")
-                    return None
-                
-                return data
-        return None
-    except Exception as e:
-        debug_log(f"خطا در دریافت وضعیت سرور از کش: {e}", "ERROR")
-        return None
-
 def generate_server_status():
     """تولید وضعیت سرور با جزئیات"""
     try:
