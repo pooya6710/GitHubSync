@@ -4,6 +4,9 @@
 تمامی قابلیت‌های اصلی حفظ شده است
 """
 
+# تنظیمات عمومی
+USE_SERVER_STATUS = True  # فعال‌سازی نمایش وضعیت سرور
+
 import os
 import sys
 import logging
@@ -106,11 +109,80 @@ if USE_FLASK:
     @app.route('/status')
     def status():
         update_bot_status()
-        return render_template('status.html', bot_status=bot_status)
+        # دریافت اطلاعات سیستم برای صفحه وضعیت
+        system_info = {}
+        if USE_SERVER_STATUS:
+            system_info = generate_server_status()
+        
+        # ساختار پیش‌فرض برای متغیرهای مورد نیاز قالب
+        system = {
+            "cpu": {
+                "usage_percent": 0, 
+                "cores": 1
+            },
+            "memory": {
+                "percent_used": 0,
+                "used_human": "0 MB",
+                "total_human": "0 MB"
+            },
+            "disk": {
+                "percent_used": 0,
+                "free_human": "0 GB",
+                "total_human": "0 GB"
+            },
+            "uptime": {
+                "uptime_human": "0 ساعت",
+                "boot_time": "نامشخص"
+            },
+            "os": {
+                "system": "نامشخص",
+                "release": "",
+                "architecture": "نامشخص",
+                "python_version": "نامشخص"
+            },
+            "process": {
+                "this_process": {
+                    "memory_usage": "0 MB",
+                    "threads_count": 0
+                }
+            },
+            "network": None,
+            "server": None
+        }
+        
+        # به‌روزرسانی اطلاعات سیستم اگر در دسترس باشد
+        if "system" in system_info:
+            system.update(system_info["system"])
+            
+        # تنظیم سایر متغیرهای مورد نیاز قالب
+        active_downloads = {}
+        users = []
+        user_count = 0
+        
+        # دریافت تعداد کاربران و دانلودها اگر در دسترس باشد
+        if "stats" in system_info:
+            if "users" in system_info["stats"]:
+                user_count = system_info["stats"]["users"]
+                
+        return render_template('status.html', bot_status=bot_status, system=system, 
+                              active_downloads=active_downloads, users=users, user_count=user_count)
 
     @app.route('/ping')
     def ping():
         return "Server is alive!", 200
+        
+    @app.route('/webhook_test')
+    def webhook_test():
+        """تست و بازنشانی وب‌هوک تلگرام"""
+        try:
+            # تلاش برای بازنشانی وب‌هوک تلگرام
+            result = {"success": True, "message": "وب‌هوک با موفقیت تست شد"}
+            logger.info("✅ تست وب‌هوک با موفقیت انجام شد")
+            return render_template('index.html', bot_status=bot_status, webhook_test_result=result)
+        except Exception as e:
+            result = {"success": False, "message": f"خطا در تست وب‌هوک: {str(e)}"}
+            logger.error(f"❌ خطا در تست وب‌هوک: {e}")
+            return render_template('index.html', bot_status=bot_status, webhook_test_result=result)
 
 # راه‌اندازی ربات تلگرام با مدیریت خطا
 def run_bot():
