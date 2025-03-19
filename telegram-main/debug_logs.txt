@@ -4168,3 +4168,25 @@ telebot.apihelper.ApiTelegramException: A request to the Telegram API was unsucc
   }
 }
 ==================================================
+{
+  "timestamp": "2025-03-19 10:57:19",
+  "level": "INFO",
+  "message": "بازتولید وضعیت سرور به دلیل منقضی شدن کش",
+  "location": {
+    "file": "server_status.py",
+    "function": "get_cached_server_status",
+    "line": 47
+  }
+}
+==================================================
+{
+  "timestamp": "2025-03-19 10:57:20",
+  "level": "INFO",
+  "message": "بازتولید وضعیت سرور به دلیل منقضی شدن کش",
+  "location": {
+    "file": "server_status.py",
+    "function": "get_cached_server_status",
+    "line": 47
+  }
+}
+==================================================
