@@ -27,6 +27,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# ثبت زمان راه‌اندازی ربات برای محاسبه مدت زمان اجرا
+START_TIME = time.time()
+
 # واردکردن ماژول‌های خارجی با مدیریت خطا
 try:
     import telebot
@@ -762,26 +765,47 @@ def process_instagram_url(message, url):
 # دستور /start
 @bot.message_handler(commands=['start', 'help'])
 def handle_start_help(message):
-    """پاسخ به دستور /start و /help"""
-    # ایجاد کیبورد اینلاین با دکمه‌های مختلف
+    """پاسخ به دستور /start و /help با رابط کاربری پیشرفته"""
+    # ایجاد کیبورد اینلاین با دکمه‌های مختلف و طراحی بهتر
     markup = types.InlineKeyboardMarkup(row_width=2)
-    help_btn = types.InlineKeyboardButton("📚 راهنما", callback_data="download_help")
-    quality_btn = types.InlineKeyboardButton("📊 کیفیت ویدیو", callback_data="select_quality")
+    
+    # دکمه‌های اصلی
+    help_btn = types.InlineKeyboardButton("📚 راهنمای استفاده", callback_data="download_help")
+    quality_btn = types.InlineKeyboardButton("📊 انتخاب کیفیت", callback_data="select_quality")
     status_btn = types.InlineKeyboardButton("📈 وضعیت سرور", callback_data="server_status")
     
-    markup.add(help_btn, quality_btn)
-    markup.add(status_btn)
+    # دکمه‌های ویژگی‌های جدید
+    youtube_btn = types.InlineKeyboardButton("🎬 دانلود یوتیوب", callback_data="youtube_info")
+    instagram_btn = types.InlineKeyboardButton("📸 دانلود اینستاگرام", callback_data="instagram_info")
+    hashtag_btn = types.InlineKeyboardButton("🔍 جستجوی هشتگ", callback_data="hashtag_search")
+    
+    # دکمه مشاوره و پرسش و پاسخ
+    questions_btn = types.InlineKeyboardButton("❓ پرسش و پاسخ", callback_data="faq")
+    
+    # اضافه کردن دکمه‌ها به کیبورد
+    markup.add(youtube_btn, instagram_btn)
+    markup.add(quality_btn, hashtag_btn)
+    markup.add(help_btn, status_btn)
+    markup.add(questions_btn)
+    
+    # متن پیام خوش‌آمدگویی با طراحی بهتر
+    welcome_text = (
+        f"👋 <b>سلام {message.from_user.first_name}!</b>\n\n"
+        "🎬 به ربات دانلود ویدیو خوش آمدید.\n\n"
+        "🔸 <b>قابلیت‌های ربات:</b>\n"
+        "• <b>دانلود ویدیو از یوتیوب</b> با کیفیت‌های مختلف\n"
+        "• <b>دانلود پست‌های اینستاگرام</b> (ویدیو و تصاویر)\n"
+        "• <b>جستجوی هشتگ</b> در کانال‌های تلگرام\n"
+        "• <b>امکان انتخاب کیفیت ویدیو</b> برای صرفه‌جویی در حجم\n"
+        "• <b>پشتیبانی از زبان فارسی</b> و رابط کاربری آسان\n\n"
+        "🔹 <b>روش استفاده:</b>\n"
+        "کافیست لینک ویدیوی مورد نظر خود را از یوتیوب یا اینستاگرام ارسال کنید.\n\n"
+        "📌 <b>از منوی شیشه‌ای زیر برای مدیریت ربات استفاده کنید:</b>"
+    )
     
     bot.send_message(
         message.chat.id,
-        f"👋 سلام {message.from_user.first_name}!\n\n"
-        "🎬 به ربات دانلود ویدیو خوش آمدید.\n\n"
-        "🔸 <b>قابلیت‌های ربات:</b>\n"
-        "• دانلود ویدیو از یوتیوب و اینستاگرام\n"
-        "• امکان انتخاب کیفیت ویدیو\n"
-        "• پاسخ‌گویی به سوالات متداول\n\n"
-        "🔹 <b>روش استفاده:</b>\n"
-        "کافیست لینک ویدیوی مورد نظر خود را از یوتیوب یا اینستاگرام ارسال کنید.",
+        welcome_text,
         parse_mode="HTML",
         reply_markup=markup
     )
@@ -972,26 +996,280 @@ def handle_callback_query(call):
                 "3. منتظر دانلود و ارسال ویدیو باشید"
             )
             
+            # ایجاد دکمه‌های بازگشت به منوی اصلی
+            markup = types.InlineKeyboardMarkup(row_width=2)
+            back_btn = types.InlineKeyboardButton("🔙 بازگشت به منو", callback_data="return_to_menu")
+            youtube_btn = types.InlineKeyboardButton("🎬 دانلود یوتیوب", callback_data="youtube_info")
+            markup.add(youtube_btn, back_btn)
+            
             bot.send_message(
                 call.message.chat.id,
                 help_text,
-                parse_mode="HTML"
+                parse_mode="HTML",
+                reply_markup=markup
             )
         
+        # اطلاعات دانلود یوتیوب
+        elif call.data == "youtube_info":
+            youtube_text = (
+                "🎬 <b>دانلود از یوتیوب</b>\n\n"
+                "<b>🔹 انواع لینک‌های پشتیبانی شده:</b>\n"
+                "• لینک‌های معمولی ویدیو یوتیوب\n"
+                "• لینک‌های کوتاه (youtu.be)\n"
+                "• لینک‌های shorts\n\n"
+                "<b>🔸 نکات مهم:</b>\n"
+                "• در حال حاضر کیفیت پیش‌فرض 360p است\n"
+                "• ربات تلاش می‌کند بهترین نسخه ممکن از ویدیو را با توجه به محدودیت‌های تلگرام دانلود کند\n"
+                "• در صورت بیشتر بودن حجم ویدیو از حد مجاز، کیفیت پایین‌تر انتخاب می‌شود\n\n"
+                "<b>🔄 روش استفاده:</b>\n"
+                "لینک یوتیوب را کپی کرده و به ربات ارسال کنید. ربات به صورت خودکار لینک را تشخیص داده و پردازش می‌کند."
+            )
+            
+            # مثال لینک یوتیوب
+            example_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            
+            # ایجاد دکمه‌های میانبر
+            markup = types.InlineKeyboardMarkup(row_width=2)
+            try_btn = types.InlineKeyboardButton("🔄 امتحان با مثال", callback_data="try_example_youtube")
+            quality_btn = types.InlineKeyboardButton("📊 انتخاب کیفیت", callback_data="select_quality")
+            back_btn = types.InlineKeyboardButton("🔙 بازگشت به منو", callback_data="return_to_menu")
+            
+            markup.add(try_btn, quality_btn)
+            markup.add(back_btn)
+            
+            bot.send_message(
+                call.message.chat.id,
+                youtube_text,
+                parse_mode="HTML",
+                reply_markup=markup
+            )
+        
+        # اطلاعات دانلود اینستاگرام
+        elif call.data == "instagram_info":
+            instagram_text = (
+                "📸 <b>دانلود از اینستاگرام</b>\n\n"
+                "<b>🔹 انواع محتوای پشتیبانی شده:</b>\n"
+                "• پست‌های معمولی (عکس و ویدئو)\n"
+                "• استوری‌ها (با دسترسی‌های مناسب)\n"
+                "• ریلز\n"
+                "• IGTV\n\n"
+                "<b>🔸 نکات مهم:</b>\n"
+                "• برای دانلود پست‌های خصوصی باید دسترسی لازم به حساب را داشته باشید\n"
+                "• در صورت داشتن چند عکس یا ویدئو در یک پست، همه آنها دانلود می‌شوند\n"
+                "• در مواردی ممکن است به دلیل محدودیت‌های اینستاگرام، دانلود با خطا مواجه شود\n\n"
+                "<b>🔄 روش استفاده:</b>\n"
+                "لینک پست اینستاگرام را کپی کرده و به ربات ارسال کنید. ربات به صورت خودکار لینک را تشخیص داده و پردازش می‌کند."
+            )
+            
+            # مثال لینک اینستاگرام
+            example_url = "https://www.instagram.com/p/sample_post/"
+            
+            # ایجاد دکمه‌های میانبر
+            markup = types.InlineKeyboardMarkup(row_width=2)
+            try_btn = types.InlineKeyboardButton("🔄 امتحان با مثال", callback_data="try_example_instagram")
+            back_btn = types.InlineKeyboardButton("🔙 بازگشت به منو", callback_data="return_to_menu")
+            markup.add(try_btn)
+            markup.add(back_btn)
+            
+            bot.send_message(
+                call.message.chat.id,
+                instagram_text,
+                parse_mode="HTML",
+                reply_markup=markup
+            )
+            
+        # اطلاعات جستجوی هشتگ
+        elif call.data == "hashtag_search":
+            hashtag_text = (
+                "🔍 <b>جستجوی هشتگ</b>\n\n"
+                "<b>🔹 قابلیت‌های جستجوی هشتگ:</b>\n"
+                "• جستجوی هشتگ در کانال‌های ثبت شده\n"
+                "• ذخیره پیام‌های مرتبط با هشتگ\n"
+                "• امکان دسته‌بندی محتوا با هشتگ‌ها\n\n"
+                "<b>🔸 دستورات مرتبط با هشتگ:</b>\n"
+                "• <code>/add_hashtag #نام_هشتگ توضیحات</code> - افزودن هشتگ جدید\n"
+                "• <code>/remove_hashtag #نام_هشتگ</code> - حذف هشتگ\n"
+                "• <code>/list_hashtags</code> - نمایش لیست هشتگ‌ها\n"
+                "• <code>/search_hashtag #نام_هشتگ</code> - جستجوی پیام‌های مرتبط با هشتگ\n\n"
+                "<b>🔹 مدیریت کانال‌ها:</b>\n"
+                "• <code>/add_channel @نام_کانال</code> - افزودن کانال برای جستجو\n"
+                "• <code>/remove_channel @نام_کانال</code> - حذف کانال\n"
+                "• <code>/list_channels</code> - نمایش لیست کانال‌ها\n\n"
+                "<b>🔄 روش استفاده:</b>\n"
+                "1. ابتدا کانال‌های مورد نظر را با دستور add_channel اضافه کنید\n"
+                "2. سپس با دستور search_hashtag# هشتگ مورد نظر را جستجو کنید"
+            )
+            
+            # ایجاد دکمه‌های میانبر
+            markup = types.InlineKeyboardMarkup(row_width=2)
+            add_channel_btn = types.InlineKeyboardButton("➕ افزودن کانال", callback_data="add_channel_cmd")
+            list_hashtags_btn = types.InlineKeyboardButton("📋 لیست هشتگ‌ها", callback_data="list_hashtags_cmd")
+            back_btn = types.InlineKeyboardButton("🔙 بازگشت به منو", callback_data="return_to_menu")
+            
+            markup.add(add_channel_btn, list_hashtags_btn)
+            markup.add(back_btn)
+            
+            bot.send_message(
+                call.message.chat.id,
+                hashtag_text,
+                parse_mode="HTML",
+                reply_markup=markup
+            )
+            
+        # پرسش و پاسخ
+        elif call.data == "faq":
+            faq_text = (
+                "❓ <b>پرسش و پاسخ</b>\n\n"
+                "<b>🔹 سوالات متداول:</b>\n\n"
+                "1️⃣ <b>چرا ویدیو دانلود نمی‌شود؟</b>\n"
+                "• اطمینان حاصل کنید که لینک معتبر است\n"
+                "• ممکن است ویدیو خصوصی باشد یا محدودیت سنی داشته باشد\n"
+                "• در برخی موارد، سرویس‌دهنده ویدیو دسترسی را محدود می‌کند\n\n"
+                "2️⃣ <b>چرا کیفیت ویدیو پایین است؟</b>\n"
+                "• محدودیت حجم فایل در تلگرام (50 مگابایت)\n"
+                "• انتخاب خودکار کیفیت پایین‌تر برای اطمینان از موفقیت دانلود\n\n"
+                "3️⃣ <b>آیا استفاده از ربات هزینه دارد؟</b>\n"
+                "• خیر، استفاده از ربات کاملاً رایگان است\n\n"
+                "4️⃣ <b>آیا ربات اطلاعات کاربران را ذخیره می‌کند؟</b>\n"
+                "• فقط اطلاعات مورد نیاز برای عملکرد ربات ذخیره می‌شود\n"
+                "• هیچ اطلاعات شخصی به اشتراک گذاشته نمی‌شود\n\n"
+                "5️⃣ <b>در صورت بروز مشکل با چه کسی تماس بگیرم؟</b>\n"
+                "• از دستور /feedback برای ارسال بازخورد یا گزارش مشکل استفاده کنید"
+            )
+            
+            # ایجاد دکمه‌های میانبر
+            markup = types.InlineKeyboardMarkup(row_width=2)
+            support_btn = types.InlineKeyboardButton("🆘 پشتیبانی", callback_data="support")
+            back_btn = types.InlineKeyboardButton("🔙 بازگشت به منو", callback_data="return_to_menu")
+            
+            markup.add(support_btn, back_btn)
+            
+            bot.send_message(
+                call.message.chat.id,
+                faq_text,
+                parse_mode="HTML",
+                reply_markup=markup
+            )
+            
+        # بازگشت به منوی اصلی
+        elif call.data == "return_to_menu":
+            handle_start_help(call.message)
+            
+        # ارسال فرم پشتیبانی
+        elif call.data == "support":
+            support_text = (
+                "🆘 <b>پشتیبانی و گزارش مشکلات</b>\n\n"
+                "برای ارسال گزارش مشکل یا درخواست پشتیبانی، لطفاً از دستور زیر استفاده کنید:\n\n"
+                "<code>/feedback متن پیام شما</code>\n\n"
+                "پیام شما به تیم پشتیبانی ارسال خواهد شد و در اسرع وقت بررسی می‌شود."
+            )
+            
+            # ایجاد دکمه بازگشت
+            markup = types.InlineKeyboardMarkup()
+            back_btn = types.InlineKeyboardButton("🔙 بازگشت به منو", callback_data="return_to_menu")
+            markup.add(back_btn)
+            
+            bot.send_message(
+                call.message.chat.id,
+                support_text,
+                parse_mode="HTML",
+                reply_markup=markup
+            )
+            
+        # کاربر دستور "افزودن کانال" را زده است
+        elif call.data == "add_channel_cmd":
+            bot.send_message(
+                call.message.chat.id,
+                "➕ <b>افزودن کانال</b>\n\n"
+                "برای افزودن کانال به لیست جستجوی هشتگ، از دستور زیر استفاده کنید:\n\n"
+                "<code>/add_channel @نام_کانال</code>\n\n"
+                "توجه: ربات باید در کانال مورد نظر عضو باشد.",
+                parse_mode="HTML"
+            )
+            
+        # کاربر دستور "لیست هشتگ‌ها" را زده است
+        elif call.data == "list_hashtags_cmd":
+            bot.send_message(
+                call.message.chat.id,
+                "🔄 در حال دریافت لیست هشتگ‌ها...",
+                parse_mode="HTML"
+            )
+            # ارسال دستور لیست هشتگ‌ها به تابع مربوطه
+            list_hashtags_command(call.message)
+
         # انتخاب کیفیت ویدیو
         elif call.data == "select_quality":
             quality_text = (
                 "📊 <b>انتخاب کیفیت ویدیو</b>\n\n"
-                "فعلاً همه ویدیوها با کیفیت استاندارد (360p) دانلود می‌شوند.\n"
-                "در نسخه‌های آینده، امکان انتخاب کیفیت اضافه خواهد شد."
+                "لطفاً کیفیت مورد نظر خود را انتخاب کنید:"
             )
+            
+            # ایجاد دکمه‌های انتخاب کیفیت
+            markup = types.InlineKeyboardMarkup(row_width=3)
+            low_btn = types.InlineKeyboardButton("240p (کم حجم)", callback_data="set_quality_240p")
+            medium_btn = types.InlineKeyboardButton("360p (استاندارد)", callback_data="set_quality_360p")
+            high_btn = types.InlineKeyboardButton("720p (HD)", callback_data="set_quality_720p")
+            back_btn = types.InlineKeyboardButton("🔙 بازگشت", callback_data="return_to_menu")
+            
+            markup.add(low_btn, medium_btn, high_btn)
+            markup.add(back_btn)
             
             bot.send_message(
                 call.message.chat.id,
                 quality_text,
-                parse_mode="HTML"
+                parse_mode="HTML",
+                reply_markup=markup
             )
-        
+            
+        # تنظیم کیفیت ویدیو
+        elif call.data.startswith("set_quality_"):
+            quality = call.data.replace("set_quality_", "")
+            
+            # ذخیره تنظیمات کیفیت برای کاربر
+            user_id = call.from_user.id
+            
+            # ایجاد یا بروزرسانی تنظیمات کاربر
+            if not hasattr(bot, 'user_settings'):
+                bot.user_settings = {}
+                
+            if user_id not in bot.user_settings:
+                bot.user_settings[user_id] = {}
+                
+            bot.user_settings[user_id]['video_quality'] = quality
+            
+            # نمایش پیام تایید
+            bot.send_message(
+                call.message.chat.id,
+                f"✅ کیفیت ویدیو با موفقیت به <b>{quality}</b> تغییر یافت.\n\n"
+                f"این تنظیم برای همه دانلودهای بعدی شما اعمال خواهد شد.",
+                parse_mode="HTML",
+                reply_markup=types.InlineKeyboardMarkup().add(
+                    types.InlineKeyboardButton("🔙 بازگشت به منو", callback_data="return_to_menu")
+                )
+            )
+            
+        # امتحان لینک نمونه یوتیوب
+        elif call.data == "try_example_youtube":
+            # ارسال یک لینک نمونه یوتیوب به عنوان مثال
+            example_url = "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+            
+            bot.send_message(
+                call.message.chat.id,
+                f"🔄 لینک نمونه یوتیوب:\n{example_url}\n\n"
+                "برای دانلود، لینک را کپی کرده و به صورت جداگانه ارسال کنید."
+            )
+            
+        # امتحان لینک نمونه اینستاگرام
+        elif call.data == "try_example_instagram":
+            # ارسال یک لینک نمونه اینستاگرام به عنوان مثال
+            example_url = "https://www.instagram.com/p/sample_post/"
+            
+            bot.send_message(
+                call.message.chat.id,
+                f"🔄 لینک نمونه اینستاگرام:\n{example_url}\n\n"
+                "برای دانلود واقعی، یک لینک معتبر اینستاگرام را کپی کرده و ارسال کنید."
+            )
+            
         # لغو دانلود
         elif call.data.startswith("cancel_"):
             download_id = call.data[7:]  # حذف "cancel_" از ابتدای متن

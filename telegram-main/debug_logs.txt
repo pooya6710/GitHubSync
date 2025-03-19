@@ -3824,3 +3824,9 @@ Traceback (most recent call last):
     'uptime': time.time() - START_TIME
                             ^^^^^^^^^^
 NameError: name 'START_TIME' is not defined
+2025-03-19 10:38:39,862 - __main__ - ERROR - خطای کلی در دریافت وضعیت سرور: name 'START_TIME' is not defined
+Traceback (most recent call last):
+  File "/home/runner/workspace/telegram-main/run_telegram_bot.py", line 820, in handle_status
+    'uptime': time.time() - START_TIME
+                            ^^^^^^^^^^
+NameError: name 'START_TIME' is not defined
