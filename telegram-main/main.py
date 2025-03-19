@@ -6,7 +6,10 @@ import threading
 import json
 from flask import Flask, jsonify, render_template
 from debug_logger import debug_log, setup_logging # Retained from original
-from bot import start_bot, TOKEN #Retained from original
+try:
+    from bot_wrapper import start_bot, TOKEN # استفاده از wrapper برای دسترسی به توابع اصلی
+except ImportError:
+    from bot import start_bot, TOKEN #Retained from original
 from server_status import generate_server_status, get_cached_server_status #Retained from original
 
 # Set up logging (Improved from original, using debug_logger if available)
