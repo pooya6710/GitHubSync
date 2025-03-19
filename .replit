@@ -4,7 +4,7 @@ modules = ["bash", "python-3.11"]
 channel = "stable-24_05"
 
 [workflows]
-runButton = "Project"
+runButton = "GitPush"
 
 [[workflows.workflow]]
 name = "Project"
@@ -65,6 +65,19 @@ task = "packager.installForAll"
 task = "shell.exec"
 args = "cd telegram-main && python main_fixed.py"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "GitPush"
+author = 40654627
+mode = "sequential"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./git_project_setup.sh https://github.com/pooya6710/telegram.git"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd telegram-main && git add . && git commit -m \"Initial commit\" && git push"
 
 [deployment]
 run = ["sh", "-c", "chmod +x git_project_setup.sh && ./git_project_setup.sh"]
