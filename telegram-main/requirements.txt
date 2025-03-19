@@ -1,0 +1,6 @@
+pytelegrambotapi>=4.7.0
+yt-dlp>=2023.2.17
+flask>=2.0.0
+requests>=2.27.1
+psutil>=5.9.0
+python-telegram-bot>=20.0.0

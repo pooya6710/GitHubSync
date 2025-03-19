@@ -1,0 +1,88 @@
+modules = ["bash", "python-3.11"]
+
+[nix]
+channel = "stable-24_05"
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "GitProjectSetupScript"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "test_script"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "run_telegram_bot"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "run_new_telegram_bot"
+
+[[workflows.workflow]]
+name = "GitProjectSetupScript"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x git_project_setup.sh && ./git_project_setup.sh"
+
+[[workflows.workflow]]
+name = "test_script"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "chmod +x git_project_setup.sh && ./git_project_setup.sh"
+
+[[workflows.workflow]]
+name = "run_telegram_bot"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd telegram-main && python main.py"
+waitForPort = 5000
+
+[[workflows.workflow]]
+name = "run_new_telegram_bot"
+author = "agent"
+
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
+[[workflows.workflow.tasks]]
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd telegram-main && python run_telegram_bot.py"
+
+[deployment]
+run = ["sh", "-c", "chmod +x git_project_setup.sh && ./git_project_setup.sh"]
