@@ -3830,3 +3830,19 @@ Traceback (most recent call last):
     'uptime': time.time() - START_TIME
                             ^^^^^^^^^^
 NameError: name 'START_TIME' is not defined
+2025-03-19 10:43:47,206 - __main__ - ERROR - خطای کلی در دریافت وضعیت سرور: name 'START_TIME' is not defined
+Traceback (most recent call last):
+  File "/home/runner/workspace/telegram-main/run_telegram_bot.py", line 820, in handle_status
+NameError: name 'START_TIME' is not defined
+2025-03-19 10:43:52,169 - __main__ - INFO - ✅ ماژول telebot با موفقیت بارگذاری شد
+2025-03-19 10:43:52,169 - __main__ - INFO - ✅ ماژول requests با موفقیت بارگذاری شد
+2025-03-19 10:43:52,184 - __main__ - INFO - ✅ ماژول psutil با موفقیت بارگذاری شد
+2025-03-19 10:43:52,272 - __main__ - INFO - ✅ ماژول flask با موفقیت بارگذاری شد
+2025-03-19 10:43:52,364 - __main__ - INFO - ✅ ماژول yt-dlp با موفقیت بارگذاری شد
+2025-03-19 10:43:52,798 - __main__ - INFO - ربات تلگرام با موفقیت راه‌اندازی شد!
+2025-03-19 10:45:21,207 - __main__ - INFO - ✅ ماژول telebot با موفقیت بارگذاری شد
+2025-03-19 10:45:21,207 - __main__ - INFO - ✅ ماژول requests با موفقیت بارگذاری شد
+2025-03-19 10:45:21,224 - __main__ - INFO - ✅ ماژول psutil با موفقیت بارگذاری شد
+2025-03-19 10:45:21,331 - __main__ - INFO - ✅ ماژول flask با موفقیت بارگذاری شد
+2025-03-19 10:45:21,423 - __main__ - INFO - ✅ ماژول yt-dlp با موفقیت بارگذاری شد
+2025-03-19 10:45:21,859 - __main__ - INFO - ربات تلگرام با موفقیت راه‌اندازی شد!

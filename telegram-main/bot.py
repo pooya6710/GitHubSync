@@ -1795,19 +1795,27 @@ def handle_callback_query(call):
 @bot.message_handler(commands=['status'])
 def server_status_command(message):
     """دستور نمایش وضعیت سرور"""
-    from bot_status_handler import handle_status_command
-    handle_status_command(bot, message)
+    try:
+        from bot_status_handler import handle_status_command
+        handle_status_command(bot, message)
+    except Exception as e:
+        bot.reply_to(message, f"❌ خطا در اجرای دستور status: {str(e)}")
+        print(f"خطا در اجرای دستور status: {e}")
 
-# ادامه کد قبلی...
-                            if 'psutil' in globals():
-                                try:
-                                    uptime_seconds = time.time() - psutil.boot_time()
-                                    uptime_hours = uptime_seconds // 3600
-                                    status_sections.append(f"🔹 **مدت روشن بودن:** `{int(uptime_hours)} ساعت`\n")
-                                except Exception as uptime_error:
-                                    status_sections.append("🔹 **مدت روشن بودن:** `اطلاعات در دسترس نیست`\n")
-                                    print(f"خطا در دریافت اطلاعات uptime: {uptime_error}")
-            except Exception as time_error:
+# بخش زیر در ساختار کد مشکل دارد و از آن استفاده نمی‌شود
+"""
+try:
+    if 'psutil' in globals():
+        try:
+            uptime_seconds = time.time() - psutil.boot_time()
+            uptime_hours = uptime_seconds // 3600
+            status_sections.append(f"🔹 **مدت روشن بودن:** `{int(uptime_hours)} ساعت`\n")
+        except Exception as uptime_error:
+            status_sections.append("🔹 **مدت روشن بودن:** `اطلاعات در دسترس نیست`\n")
+            print(f"خطا در دریافت اطلاعات uptime: {uptime_error}")
+except Exception as time_error:
+    print(f"خطای عمومی در دریافت اطلاعات زمان: {time_error}")
+"""
                 status_sections.append("🔹 **زمان سرور:** `اطلاعات در دسترس نیست`\n")
                 print(f"خطا در دریافت اطلاعات زمان: {time_error}")
 

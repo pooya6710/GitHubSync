@@ -1194,8 +1194,24 @@ def handle_callback_query(call):
                 "🔄 در حال دریافت لیست هشتگ‌ها...",
                 parse_mode="HTML"
             )
-            # ارسال دستور لیست هشتگ‌ها به تابع مربوطه
-            list_hashtags_command(call.message)
+            # نمایش پیام مناسب برای هشتگ‌ها
+            hashtag_list_text = (
+                "📋 <b>لیست هشتگ‌ها</b>\n\n"
+                "برای استفاده از هشتگ‌ها ابتدا باید از دستور زیر استفاده کنید:\n"
+                "<code>/add_hashtag #نام_هشتگ توضیحات</code>\n\n"
+                "مثال:\n"
+                "<code>/add_hashtag #سفر عکس‌های سفر به شمال</code>\n\n"
+                "سپس با دستور زیر می‌توانید آن را جستجو کنید:\n"
+                "<code>/search_hashtag #نام_هشتگ</code>"
+            )
+            bot.send_message(
+                call.message.chat.id,
+                hashtag_list_text,
+                parse_mode="HTML",
+                reply_markup=types.InlineKeyboardMarkup().add(
+                    types.InlineKeyboardButton("🔙 بازگشت به منو", callback_data="return_to_menu")
+                )
+            )
 
         # انتخاب کیفیت ویدیو
         elif call.data == "select_quality":
@@ -1341,6 +1357,50 @@ def handle_callback_query(call):
         except:
             logger.error("خطا در ارسال پیام خطا", exc_info=True)
 
+# دستور پشتیبانی
+@bot.message_handler(commands=['feedback'])
+def handle_feedback(message):
+    """پردازش دستور ارسال بازخورد به پشتیبانی"""
+    # بررسی وجود پیام
+    if len(message.text.split(' ', 1)) < 2:
+        bot.reply_to(message, 
+                    "❌ لطفاً پیام خود را بعد از دستور /feedback وارد کنید.\n"
+                    "مثال: <code>/feedback مشکل در دانلود ویدیو</code>",
+                    parse_mode="HTML")
+        return
+    
+    # جدا کردن متن پیام
+    _, feedback_text = message.text.split(' ', 1)
+    
+    # اطلاعات کاربر
+    user_id = message.from_user.id
+    username = message.from_user.username or "بدون نام کاربری"
+    full_name = f"{message.from_user.first_name} {message.from_user.last_name or ''}"
+    
+    # آماده‌سازی پیام بازخورد برای ارسال به ادمین
+    feedback_message = (
+        f"📬 <b>بازخورد جدید</b>\n\n"
+        f"👤 <b>کاربر:</b> {full_name}\n"
+        f"🆔 <b>شناسه:</b> <code>{user_id}</code>\n"
+        f"🔤 <b>نام کاربری:</b> @{username}\n\n"
+        f"📝 <b>پیام:</b>\n{feedback_text}"
+    )
+    
+    # ارسال به ادمین
+    if ADMIN_CHAT_ID:
+        try:
+            bot.send_message(ADMIN_CHAT_ID, feedback_message, parse_mode="HTML")
+            logger.info(f"بازخورد جدید از کاربر {user_id} دریافت شد")
+        except Exception as e:
+            logger.error(f"خطا در ارسال بازخورد به ادمین: {e}", exc_info=True)
+    else:
+        logger.warning("بازخورد دریافت شد اما ADMIN_CHAT_ID تعریف نشده است")
+    
+    # ارسال تأییدیه به کاربر
+    bot.reply_to(message, 
+                "✅ پیام شما با موفقیت برای تیم پشتیبانی ارسال شد.\n"
+                "در اسرع وقت بررسی خواهد شد.")
+
 # پاسخ به همه پیام‌ها
 @bot.message_handler(func=lambda message: True)
 def handle_message(message):
@@ -1355,8 +1415,25 @@ def handle_message(message):
         # دانلود از اینستاگرام
         threading.Thread(target=process_instagram_url, args=(message, url)).start()
     
+    elif url.startswith('/'):
+        # دستور ناشناخته
+        bot.reply_to(message, 
+                    "❓ دستور ناشناخته. برای مشاهده لیست دستورات از /help استفاده کنید.")
+    
     else:
-        bot.reply_to(message, "❌ لطفاً یک لینک معتبر از یوتیوب یا اینستاگرام ارسال کنید.")
+        # پیشنهاد استفاده از لینک
+        markup = types.InlineKeyboardMarkup(row_width=2)
+        youtube_btn = types.InlineKeyboardButton("🎬 دانلود یوتیوب", callback_data="youtube_info")
+        instagram_btn = types.InlineKeyboardButton("📸 دانلود اینستاگرام", callback_data="instagram_info")
+        help_btn = types.InlineKeyboardButton("📚 راهنما", callback_data="download_help")
+        
+        markup.add(youtube_btn, instagram_btn)
+        markup.add(help_btn)
+        
+        bot.reply_to(message, 
+                    "📋 لطفاً یک لینک معتبر از یوتیوب یا اینستاگرام ارسال کنید.\n\n"
+                    "جهت آشنایی با نحوه استفاده از ربات، از دکمه‌های زیر استفاده کنید:",
+                    reply_markup=markup)
 
 # راه‌اندازی وب‌هوک فلسک (اگر نیاز باشد)
 def setup_flask_webhook(webhook_url):
