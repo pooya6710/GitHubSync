@@ -21,14 +21,6 @@ args = "test_script"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "run_telegram_bot"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "run_new_telegram_bot"
-
-[[workflows.workflow.tasks]]
-task = "workflow.run"
 args = "run_fixed_bot"
 
 [[workflows.workflow]]
@@ -58,35 +50,6 @@ task = "packager.installForAll"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "chmod +x git_project_setup.sh && ./git_project_setup.sh"
-
-[[workflows.workflow]]
-name = "run_telegram_bot"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd telegram-main && python main.py"
-waitForPort = 5000
-
-[[workflows.workflow]]
-name = "run_new_telegram_bot"
-author = "agent"
-
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
-[[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "cd telegram-main && python run_telegram_bot.py"
 
 [[workflows.workflow]]
 name = "run_fixed_bot"
