@@ -741,7 +741,9 @@ def handle_callback_query(call):
             bot.answer_callback_query(call.id, "⚠️ خطایی رخ داد")
         except:
             pass
-
+# تابع دیباگ برای ثبت پیام‌های خطا و اطلاع‌رسانی
+def debug_log(message, level="INFO"):
+    print(f"[{level}] {message}")
 # تابع راه‌اندازی ربات
 def start_bot():
     """راه‌اندازی ربات تلگرام"""
@@ -809,4 +811,3 @@ def start_bot():
 # اجرای مستقیم
 if __name__ == "__main__":
     start_bot()
->>>>>>> 3b6692783d80f74482bf7577f1da04a3c3e8231f
